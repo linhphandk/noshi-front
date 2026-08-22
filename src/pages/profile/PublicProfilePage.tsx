@@ -1,13 +1,5 @@
 import { useParams } from "react-router"
-import {
-  Text,
-  Flex,
-  Card,
-  Badge,
-  Spinner,
-  Separator,
-  Button,
-} from "@radix-ui/themes"
+import { Text, Flex, Card, Badge, Spinner, Separator } from "@radix-ui/themes"
 import { useGetPublicProfile } from "@/api/generated"
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -119,21 +111,6 @@ const PublicProfilePage = () => {
             </Flex>
           </Card>
         )}
-
-        <Card size="3" className="w-full max-w-md">
-          <Flex direction="column" gap="3" align="center">
-            <Text size="3" weight="bold">
-              Get in touch
-            </Text>
-            <Text size="2" color="gray" align="center">
-              Interested in collaborating? Reach out to discuss partnership
-              opportunities.
-            </Text>
-            <Button size="3" variant="solid">
-              Contact Creator
-            </Button>
-          </Flex>
-        </Card>
       </Flex>
     </Flex>
   )
