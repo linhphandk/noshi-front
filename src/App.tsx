@@ -6,6 +6,7 @@ import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage"
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage"
 import DashboardPage from "@/pages/dashboard/DashboardPage"
 import ProfileEditPage from "@/pages/profile/ProfileEditPage"
+import PublicProfilePage from "@/pages/profile/PublicProfilePage"
 import OnboardingPage from "@/pages/OnboardingPage"
 import ProtectedRoute from "@/components/ProtectedRoute"
 
@@ -41,6 +42,7 @@ const App = () => {
           </ProtectedRoute>
         }
       />
+      <Route path="/:slug" element={<PublicProfilePage />} />
     </Routes>
   )
 }

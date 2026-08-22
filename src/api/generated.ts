@@ -84,6 +84,10 @@ export interface Profile {
   user_id: string;
 }
 
+export type PublicProfile = Profile & {
+  platforms: ManualPlatform[];
+};
+
 export interface RegisterRequest {
   email: string;
   name: string;
@@ -1199,3 +1203,92 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getDeleteManualPlatformMutationOptions(options), queryClient);
     }
+
+export const getGetPublicProfileUrl = (slug: string,) => {
+
+
+
+
+  return `/profile/public/${slug}`
+}
+
+export const getPublicProfile = async (slug: string, options?: RequestInit): Promise<PublicProfile> => {
+
+  return customFetch<PublicProfile>(getGetPublicProfileUrl(slug),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPublicProfileQueryKey = (slug: string,) => {
+    return [
+    `/profile/public/${slug}`
+    ] as const;
+    }
+
+
+export const getGetPublicProfileQueryOptions = <TData = Awaited<ReturnType<typeof getPublicProfile>>, TError = void>(slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicProfile>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPublicProfileQueryKey(slug);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicProfile>>> = ({ signal }) => getPublicProfile(slug, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: slug !== null && slug !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPublicProfile>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetPublicProfileQueryResult = NonNullable<Awaited<ReturnType<typeof getPublicProfile>>>
+export type GetPublicProfileQueryError = void
+
+
+export function useGetPublicProfile<TData = Awaited<ReturnType<typeof getPublicProfile>>, TError = void>(
+ slug: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicProfile>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPublicProfile>>,
+          TError,
+          Awaited<ReturnType<typeof getPublicProfile>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPublicProfile<TData = Awaited<ReturnType<typeof getPublicProfile>>, TError = void>(
+ slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicProfile>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPublicProfile>>,
+          TError,
+          Awaited<ReturnType<typeof getPublicProfile>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPublicProfile<TData = Awaited<ReturnType<typeof getPublicProfile>>, TError = void>(
+ slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicProfile>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetPublicProfile<TData = Awaited<ReturnType<typeof getPublicProfile>>, TError = void>(
+ slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicProfile>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetPublicProfileQueryOptions(slug,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
