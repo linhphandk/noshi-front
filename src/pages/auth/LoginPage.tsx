@@ -4,9 +4,11 @@ import { Button, TextField, Text, Flex, Separator } from "@radix-ui/themes"
 import { useForm } from "react-hook-form"
 
 import AuthLayout from "@/pages/auth/AuthLayout"
-import type { LoginRequest, ApiError } from "@/types/auth"
+import { useAuth } from "@/context"
+import type { LoginRequest } from "@/types/auth"
 
 const LoginPage = () => {
+  const { login } = useAuth()
   const [serverError, setServerError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -21,25 +23,13 @@ const LoginPage = () => {
     setIsLoading(true)
 
     try {
-      const res = await fetch("/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      })
-
-      const body: ApiError | Awaited<ReturnType<typeof res.json>> =
-        await res.json()
-
-      if (!res.ok) {
-        setServerError(
-          "message" in body ? body.message : "Something went wrong",
-        )
-        return
-      }
-
-      // TODO: store tokens + redirect (PR7)
-    } catch {
-      setServerError("Network error. Please try again.")
+      await login(data.email, data.password)
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === "object" && "message" in err
+          ? (err as { message: string }).message
+          : "Something went wrong"
+      setServerError(msg)
     } finally {
       setIsLoading(false)
     }
