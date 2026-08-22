@@ -4,6 +4,8 @@ import SignupPage from "@/pages/auth/SignupPage"
 import LoginPage from "@/pages/auth/LoginPage"
 import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage"
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage"
+import DashboardPage from "@/pages/dashboard/DashboardPage"
+import ProfileEditPage from "@/pages/profile/ProfileEditPage"
 import OnboardingPage from "@/pages/OnboardingPage"
 import ProtectedRoute from "@/components/ProtectedRoute"
 
@@ -20,6 +22,22 @@ const App = () => {
         element={
           <ProtectedRoute>
             <OnboardingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile/edit"
+        element={
+          <ProtectedRoute>
+            <ProfileEditPage />
           </ProtectedRoute>
         }
       />

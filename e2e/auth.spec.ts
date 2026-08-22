@@ -103,22 +103,30 @@ test.describe("Onboarding flow", () => {
       })
     })
 
+    await page.route("**/profile/platforms", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify([]),
+      }),
+    )
+
     await page.goto("/onboarding")
 
-    // Step 1: About
+    // Step 0: About you
     await page.getByPlaceholder("Jane Doe").fill("Jane Doe")
-    await page.getByPlaceholder(/Fitness creator/).fill("Travel & lifestyle creator")
+    await page.getByPlaceholder("A short description about yourself").fill("Travel & lifestyle creator")
     await page.getByRole("button", { name: "Continue" }).click()
 
-    // Step 2: Platforms (skip)
+    // Step 1: Platforms (skip)
     await page.getByRole("button", { name: "Continue" }).click()
 
-    // Step 3: Niches
+    // Step 2: Niches
     await page.getByText("Travel").click()
     await page.getByText("Lifestyle").click()
     await page.getByRole("button", { name: "Continue" }).click()
 
-    // Step 4: Submit
+    // Step 3: Done
     await page.getByRole("button", { name: "Go to dashboard" }).click()
 
     await expect(page).toHaveURL(/dashboard/)
