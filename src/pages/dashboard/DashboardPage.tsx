@@ -160,7 +160,7 @@ const DashboardPage = () => {
               Quick Actions
             </Text>
             <Flex gap="3">
-              <Button variant="soft" onClick={() => navigate("/onboarding")}>
+              <Button variant="soft" onClick={() => navigate("/profile/edit")}>
                 Edit Profile
               </Button>
               <Button variant="soft" disabled>
