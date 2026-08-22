@@ -37,6 +37,8 @@ const NICHES = [
 
 const STEPS = ["About you", "Platforms", "Niches", "Done"]
 
+const ALL_PLATFORMS: Platform["platform"][] = ["instagram", "tiktok", "youtube"]
+
 const OnboardingPage = () => {
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
@@ -61,12 +63,17 @@ const OnboardingPage = () => {
     setStep(1)
   }
 
+  const usedPlatforms = data.platforms.map((p) => p.platform)
+  const hasUnusedPlatform = ALL_PLATFORMS.some((p) => !usedPlatforms.includes(p))
+
   const addPlatform = () => {
+    const next = ALL_PLATFORMS.find((p) => !usedPlatforms.includes(p))
+    if (!next) return
     setData((prev) => ({
       ...prev,
       platforms: [
         ...prev.platforms,
-        { platform: "instagram", handle: "", followerCount: 0 },
+        { platform: next, handle: "", followerCount: 0 },
       ],
     }))
   }
@@ -197,9 +204,15 @@ const OnboardingPage = () => {
                           }
                           className="rounded-[var(--radius-2)] border border-[var(--gray-6)] bg-[var(--gray-1)] px-3 py-2 text-sm text-[var(--gray-12)]"
                         >
-                          <option value="instagram">Instagram</option>
-                          <option value="tiktok">TikTok</option>
-                          <option value="youtube">YouTube</option>
+                          {ALL_PLATFORMS.map((p) => (
+                            <option
+                              key={p}
+                              value={p}
+                              disabled={p !== plat.platform && usedPlatforms.includes(p)}
+                            >
+                              {p.charAt(0).toUpperCase() + p.slice(1)}
+                            </option>
+                          ))}
                         </select>
                       </Flex>
                       <Flex direction="column" gap="1" className="flex-1">
@@ -236,9 +249,11 @@ const OnboardingPage = () => {
                 </Card>
               ))}
 
-              <Button variant="soft" onClick={addPlatform}>
-                + Add platform
-              </Button>
+              {hasUnusedPlatform && (
+                <Button variant="soft" onClick={addPlatform}>
+                  + Add platform
+                </Button>
+              )}
 
               <Flex gap="3">
                 <Button variant="soft" onClick={() => setStep(0)}>
