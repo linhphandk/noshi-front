@@ -1,18 +1,26 @@
 import { useState } from "react"
 import { useNavigate } from "react-router"
-import { Button, TextField, Text, Flex, Card, Badge, IconButton } from "@radix-ui/themes"
+import {
+  Button,
+  TextField,
+  Text,
+  Flex,
+  Card,
+  Badge,
+  IconButton,
+} from "@radix-ui/themes"
 import { useForm } from "react-hook-form"
+import { useCreateProfile, useAddManualPlatform } from "@/api/generated"
 
 interface Platform {
-  platform: "instagram" | "tiktok" | "youtube"
+  platform: string
   handle: string
   followerCount: number
 }
 
 interface OnboardingData {
   name: string
-  bio: string
-  location: string
+  headline: string
   platforms: Platform[]
   niches: string[]
 }
@@ -42,26 +50,30 @@ const OnboardingPage = () => {
   const [step, setStep] = useState(0)
   const [data, setData] = useState<OnboardingData>({
     name: "",
-    bio: "",
-    location: "",
+    headline: "",
     platforms: [],
     niches: [],
   })
+  const [serverError, setServerError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const createProfile = useCreateProfile()
+  const addPlatform = useAddManualPlatform()
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm({
-    defaultValues: { name: data.name, bio: data.bio, location: data.location },
+    defaultValues: { name: data.name, headline: data.headline },
   })
 
-  const handleAboutSubmit = (formData: { name: string; bio: string; location: string }) => {
+  const handleAboutSubmit = (formData: { name: string; headline: string }) => {
     setData((prev) => ({ ...prev, ...formData }))
     setStep(1)
   }
 
-  const addPlatform = () => {
+  const addPlatformRow = () => {
     setData((prev) => ({
       ...prev,
       platforms: [
@@ -71,7 +83,11 @@ const OnboardingPage = () => {
     }))
   }
 
-  const updatePlatform = (index: number, field: keyof Platform, value: string | number) => {
+  const updatePlatform = (
+    index: number,
+    field: keyof Platform,
+    value: string | number,
+  ) => {
     setData((prev) => ({
       ...prev,
       platforms: prev.platforms.map((p, i) =>
@@ -97,15 +113,51 @@ const OnboardingPage = () => {
   }
 
   const handleSubmitAll = async () => {
-    // TODO: POST to backend (PR10)
-    navigate("/dashboard")
+    setServerError(null)
+    setIsSubmitting(true)
+
+    try {
+      const slug = data.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
+
+      await createProfile.mutateAsync({
+        data: { slug, headline: data.headline, niches: data.niches },
+      })
+
+      for (const plat of data.platforms) {
+        if (plat.handle.trim()) {
+          await addPlatform.mutateAsync({
+            data: {
+              platform: plat.platform,
+              handle: plat.handle,
+              follower_count: plat.followerCount,
+            },
+          })
+        }
+      }
+
+      navigate("/dashboard")
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === "object" && "message" in err
+          ? (err as { message: string }).message
+          : "Something went wrong"
+      setServerError(msg)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <Flex align="center" justify="center" className="min-h-screen bg-[var(--gray-2)] px-4">
+    <Flex
+      align="center"
+      justify="center"
+      className="min-h-screen bg-[var(--gray-2)] px-4"
+    >
       <Card size="4" className="w-full max-w-lg">
         <Flex direction="column" gap="5">
-          {/* Progress */}
           <Flex justify="between" align="center">
             <Text size="2" color="gray">
               Step {step + 1} of {STEPS.length}
@@ -115,7 +167,12 @@ const OnboardingPage = () => {
             </Text>
           </Flex>
 
-          {/* Step 0: About you */}
+          {serverError && (
+            <Text size="2" color="red" role="alert">
+              {serverError}
+            </Text>
+          )}
+
           {step === 0 && (
             <form onSubmit={handleSubmit(handleAboutSubmit)}>
               <Flex direction="column" gap="4">
@@ -128,31 +185,27 @@ const OnboardingPage = () => {
                     {...register("name", { required: "Name is required" })}
                   />
                   {errors.name && (
-                    <Text size="1" color="red">{errors.name.message}</Text>
+                    <Text size="1" color="red">
+                      {errors.name.message}
+                    </Text>
                   )}
                 </Flex>
 
                 <Flex direction="column" gap="1">
                   <Text as="label" size="2" weight="medium">
-                    Bio
+                    Headline
                   </Text>
                   <TextField.Root
-                    placeholder="A short description about yourself"
-                    {...register("bio", { required: "Bio is required" })}
+                    placeholder="Fitness creator & travel enthusiast"
+                    {...register("headline", {
+                      required: "Headline is required",
+                    })}
                   />
-                  {errors.bio && (
-                    <Text size="1" color="red">{errors.bio.message}</Text>
+                  {errors.headline && (
+                    <Text size="1" color="red">
+                      {errors.headline.message}
+                    </Text>
                   )}
-                </Flex>
-
-                <Flex direction="column" gap="1">
-                  <Text as="label" size="2" weight="medium">
-                    Location
-                  </Text>
-                  <TextField.Root
-                    placeholder="Los Angeles, CA"
-                    {...register("location")}
-                  />
                 </Flex>
 
                 <Button type="submit" size="3">
@@ -162,7 +215,6 @@ const OnboardingPage = () => {
             </form>
           )}
 
-          {/* Step 1: Platforms */}
           {step === 1 && (
             <Flex direction="column" gap="4">
               <Text size="2" color="gray">
@@ -236,7 +288,7 @@ const OnboardingPage = () => {
                 </Card>
               ))}
 
-              <Button variant="soft" onClick={addPlatform}>
+              <Button variant="soft" onClick={addPlatformRow}>
                 + Add platform
               </Button>
 
@@ -249,7 +301,6 @@ const OnboardingPage = () => {
             </Flex>
           )}
 
-          {/* Step 2: Niches */}
           {step === 2 && (
             <Flex direction="column" gap="4">
               <Text size="2" color="gray">
@@ -261,7 +312,9 @@ const OnboardingPage = () => {
                   <Badge
                     key={niche}
                     size="2"
-                    variant={data.niches.includes(niche) ? "solid" : "outline"}
+                    variant={
+                      data.niches.includes(niche) ? "solid" : "outline"
+                    }
                     color={data.niches.includes(niche) ? "iris" : "gray"}
                     className="cursor-pointer select-none"
                     onClick={() => toggleNiche(niche)}
@@ -284,7 +337,6 @@ const OnboardingPage = () => {
             </Flex>
           )}
 
-          {/* Step 3: Done */}
           {step === 3 && (
             <Flex direction="column" gap="4" align="center">
               <Text size="5" weight="bold">
@@ -299,7 +351,9 @@ const OnboardingPage = () => {
                 <Button variant="soft" onClick={() => setStep(2)}>
                   Back
                 </Button>
-                <Button onClick={handleSubmitAll}>Go to dashboard</Button>
+                <Button onClick={handleSubmitAll} disabled={isSubmitting}>
+                  {isSubmitting ? "Creating..." : "Go to dashboard"}
+                </Button>
               </Flex>
             </Flex>
           )}
