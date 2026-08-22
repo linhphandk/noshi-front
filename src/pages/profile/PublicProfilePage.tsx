@@ -5,8 +5,16 @@ import {
   Card,
   Badge,
   Spinner,
+  Separator,
+  Button,
 } from "@radix-ui/themes"
 import { useGetPublicProfile } from "@/api/generated"
+
+const PLATFORM_LABELS: Record<string, string> = {
+  instagram: "Instagram",
+  tiktok: "TikTok",
+  youtube: "YouTube",
+}
 
 const PublicProfilePage = () => {
   const { slug } = useParams<{ slug: string }>()
@@ -42,6 +50,7 @@ const PublicProfilePage = () => {
   }
 
   const { platforms, ...profile } = data
+  const totalFollowers = platforms.reduce((sum, p) => sum + p.follower_count, 0)
 
   return (
     <Flex direction="column" className="min-h-screen bg-[var(--gray-2)]">
@@ -78,9 +87,17 @@ const PublicProfilePage = () => {
         {platforms.length > 0 && (
           <Card size="3" className="w-full max-w-md">
             <Flex direction="column" gap="3">
-              <Text size="3" weight="bold">
-                Platforms
-              </Text>
+              <Flex justify="between" align="center">
+                <Text size="3" weight="bold">
+                  Stats
+                </Text>
+                <Badge size="2" color="green">
+                  {totalFollowers.toLocaleString()} total followers
+                </Badge>
+              </Flex>
+
+              <Separator size="4" />
+
               {platforms.map((plat) => (
                 <Flex
                   key={plat.id}
@@ -89,11 +106,13 @@ const PublicProfilePage = () => {
                   className="rounded-[var(--radius-2)] bg-[var(--gray-3)] px-3 py-2"
                 >
                   <Flex gap="2" align="center">
-                    <Badge size="2">{plat.platform}</Badge>
+                    <Badge size="2" color="iris">
+                      {PLATFORM_LABELS[plat.platform] ?? plat.platform}
+                    </Badge>
                     <Text size="2">{plat.handle}</Text>
                   </Flex>
-                  <Text size="2" color="gray">
-                    {plat.follower_count.toLocaleString()} followers
+                  <Text size="2" weight="medium">
+                    {plat.follower_count.toLocaleString()}
                   </Text>
                 </Flex>
               ))}
@@ -102,13 +121,17 @@ const PublicProfilePage = () => {
         )}
 
         <Card size="3" className="w-full max-w-md">
-          <Flex direction="column" gap="2" align="center">
-            <Text size="2" color="gray">
-              Want to work with this creator?
+          <Flex direction="column" gap="3" align="center">
+            <Text size="3" weight="bold">
+              Get in touch
             </Text>
-            <Text size="2" weight="medium">
-              Contact them directly or check back soon for media kits.
+            <Text size="2" color="gray" align="center">
+              Interested in collaborating? Reach out to discuss partnership
+              opportunities.
             </Text>
+            <Button size="3" variant="solid">
+              Contact Creator
+            </Button>
           </Flex>
         </Card>
       </Flex>
