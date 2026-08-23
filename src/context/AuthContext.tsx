@@ -56,7 +56,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   )
 
   const logout = useCallback(async () => {
-    await logoutMutation.mutateAsync()
+    try {
+      await logoutMutation.mutateAsync()
+    } catch {
+      // Server logout may fail if refresh cookie is missing — still clear local state
+    }
     clearAccessToken()
     localStorage.removeItem("noshi_user")
     setUser(null)

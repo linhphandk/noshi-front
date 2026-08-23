@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router"
 import { Button, TextField, Text, Flex, Card, Badge, IconButton } from "@radix-ui/themes"
 import { useForm } from "react-hook-form"
+import { useCreateProfile, useAddManualPlatform } from "@/api/generated"
 
 interface Platform {
   platform: "instagram" | "tiktok" | "youtube"
@@ -103,8 +104,27 @@ const OnboardingPage = () => {
     }))
   }
 
+  const createProfileMutation = useCreateProfile()
+  const addPlatformMutation = useAddManualPlatform()
+
   const handleSubmitAll = async () => {
-    // TODO: POST to backend (PR10)
+    const slug = data.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+
+    await createProfileMutation.mutateAsync({
+      data: { slug, headline: data.bio, niches: data.niches },
+    })
+
+    for (const p of data.platforms) {
+      if (p.handle) {
+        await addPlatformMutation.mutateAsync({
+          data: { platform: p.platform, handle: p.handle, follower_count: p.followerCount },
+        })
+      }
+    }
+
     navigate("/dashboard")
   }
 

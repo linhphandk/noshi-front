@@ -45,6 +45,8 @@ export interface CreateManualPlatformRequest {
 
 export interface CreateProfileRequest {
   headline: string;
+  /** @nullable */
+  is_published?: boolean | null;
   niches: string[];
   slug: string;
 }
