@@ -16,6 +16,24 @@ export default defineConfig(({ mode }) => {
       proxy: {
         "/auth": { target: apiTarget, changeOrigin: true },
         "/api": { target: apiTarget, changeOrigin: true },
+        "/waitlist": { target: apiTarget, changeOrigin: true },
+        "/profile/platforms": { target: apiTarget, changeOrigin: true },
+        "/profile/public": { target: apiTarget, changeOrigin: true },
+        "/profile": {
+          target: apiTarget,
+          changeOrigin: true,
+          rewrite: (path) => {
+            // Don't rewrite /profile/edit or other SPA routes
+            if (path !== "/profile") return path
+            return path
+          },
+          bypass: (req) => {
+            const u = req.url?.split("?")[0] || ""
+            if (u !== "/profile") {
+              return "/"
+            }
+          },
+        },
       },
     },
     build: {
