@@ -9,8 +9,9 @@ import {
   Separator,
   Spinner,
 } from "@radix-ui/themes"
-import { useGetProfile, useGetManualPlatforms } from "@/api/generated"
+import { useGetProfile, useGetManualPlatforms, useListConnections } from "@/api/generated"
 import { useAuth } from "@/context"
+import { getAuthorizeUrl } from "@/api/generated"
 
 const DashboardPage = () => {
   const { user, logout } = useAuth()
@@ -18,6 +19,8 @@ const DashboardPage = () => {
   const { data: profile, isLoading: profileLoading } = useGetProfile()
   const { data: platforms, isLoading: platformsLoading } =
     useGetManualPlatforms()
+  const { data: socialConnections, isLoading: connectionsLoading } =
+    useListConnections()
 
   const isLoading = profileLoading || platformsLoading
 
@@ -50,6 +53,15 @@ const DashboardPage = () => {
   }
 
   const score = profile.completion_score ?? 0
+
+  const handleConnectInstagram = async () => {
+    try {
+      const res = await getAuthorizeUrl("instagram")
+      window.location.href = res.authorize_url
+    } catch (err) {
+      console.error("Failed to get Instagram authorize URL:", err)
+    }
+  }
 
   return (
     <Flex direction="column" className="min-h-screen bg-[var(--gray-2)]">
@@ -131,9 +143,14 @@ const DashboardPage = () => {
         {platforms && platforms.length > 0 && (
           <Card size="3" className="w-full max-w-lg">
             <Flex direction="column" gap="3">
-              <Text size="3" weight="bold">
-                Platforms
-              </Text>
+              <Flex justify="between" align="center">
+                <Text size="3" weight="bold">
+                  Platforms
+                </Text>
+                <Button variant="soft" size="2" onClick={handleConnectInstagram}>
+                  + Connect Instagram
+                </Button>
+              </Flex>
               {platforms.map((plat) => (
                 <Flex
                   key={plat.id}
@@ -153,6 +170,48 @@ const DashboardPage = () => {
             </Flex>
           </Card>
         )}
+
+        <Card size="3" className="w-full max-w-lg">
+          <Flex direction="column" gap="3">
+            <Flex justify="between" align="center">
+              <Text size="3" weight="bold">
+                Instagram
+              </Text>
+              {connectionsLoading ? (
+                <Spinner size="2" />
+              ) : (
+                <Button variant="soft" size="2" onClick={handleConnectInstagram}>
+                  + Connect Instagram
+                </Button>
+              )}
+            </Flex>
+            {socialConnections && socialConnections.length > 0 && (
+              <Flex direction="column" gap="2">
+                {socialConnections.map((conn) => (
+                  <Flex
+                    key={conn.id}
+                    justify="between"
+                    align="center"
+                    className="rounded-[var(--radius-2)] bg-[var(--gray-3)] px-3 py-2"
+                  >
+                    <Flex gap="2" align="center">
+                      <Badge size="2">{conn.platform}</Badge>
+                      <Text size="2">@{conn.handle}</Text>
+                      {conn.is_primary && (
+                        <Badge size="1" color="green">Primary</Badge>
+                      )}
+                    </Flex>
+                    <Flex gap="2" align="center">
+                      <Text size="2" color="gray">
+                        {conn.follower_count.toLocaleString()} followers
+                      </Text>
+                    </Flex>
+                  </Flex>
+                ))}
+              </Flex>
+            )}
+          </Flex>
+        </Card>
 
         <Card size="3" className="w-full max-w-lg">
           <Flex direction="column" gap="3">

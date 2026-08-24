@@ -8,6 +8,7 @@ import DashboardPage from "@/pages/dashboard/DashboardPage"
 import ProfileEditPage from "@/pages/profile/ProfileEditPage"
 import PublicProfilePage from "@/pages/profile/PublicProfilePage"
 import OnboardingPage from "@/pages/OnboardingPage"
+import OAuthCallbackPage from "@/pages/auth/OAuthCallbackPage"
 import ProtectedRoute from "@/components/ProtectedRoute"
 
 const App = () => {
@@ -42,6 +43,7 @@ const App = () => {
           </ProtectedRoute>
         }
       />
+      <Route path="/oauth/instagram/callback" element={<OAuthCallbackPage />} />
       <Route path="/:slug" element={<PublicProfilePage />} />
     </Routes>
   )
