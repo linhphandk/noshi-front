@@ -104,7 +104,8 @@ test.describe("Dashboard — with profile", () => {
 
     await page.goto("/dashboard")
     await expect(page.getByText("Platforms")).toBeVisible()
-    await expect(page.getByText("instagram")).toBeVisible()
+    const platformsCard = page.getByText("Platforms").locator("..")
+    await expect(platformsCard.getByText("instagram")).toBeVisible()
     await expect(page.getByText("@instauser")).toBeVisible()
     await expect(page.getByText("5,000 followers")).toBeVisible()
   })
