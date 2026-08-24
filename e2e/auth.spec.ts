@@ -84,7 +84,7 @@ test.describe("Auth — signup", () => {
 })
 
 test.describe("Auth — login", () => {
-  test("login → onboarding", async ({ page }) => {
+  test("login → dashboard", async ({ page }) => {
     const email = testEmail()
     await page.request.post("http://localhost:3000/auth/register", {
       data: { email, name: "Login User", password: PASSWORD },
@@ -94,7 +94,7 @@ test.describe("Auth — login", () => {
     await page.getByPlaceholder("jane@example.com").fill(email)
     await page.getByPlaceholder("Your password").fill(PASSWORD)
     await page.getByRole("button", { name: "Log in" }).click()
-    await expect(page).toHaveURL(/onboarding/)
+    await expect(page).toHaveURL(/dashboard/)
   })
 
   test("login shows error on bad credentials", async ({ page }) => {

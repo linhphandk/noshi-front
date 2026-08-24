@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setAccessToken(res.access_token, res.expires_in)
       localStorage.setItem("noshi_user", JSON.stringify(res.user))
       setUser(res.user)
-      navigate("/onboarding")
+      navigate("/dashboard")
     },
     [loginMutation, navigate],
   )
