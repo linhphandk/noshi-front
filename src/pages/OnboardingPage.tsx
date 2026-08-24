@@ -1,8 +1,8 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
 import { Button, TextField, Text, Flex, Card, Badge, IconButton } from "@radix-ui/themes"
 import { useForm } from "react-hook-form"
-import { useCreateProfile, useAddManualPlatform } from "@/api/generated"
+import { useCreateProfile, useAddManualPlatform, useGetProfile } from "@/api/generated"
 
 interface Platform {
   platform: "instagram" | "tiktok" | "youtube"
@@ -43,6 +43,7 @@ const ALL_PLATFORMS: Platform["platform"][] = ["instagram", "tiktok", "youtube"]
 const OnboardingPage = () => {
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
+  const [serverError, setServerError] = useState<string | null>(null)
   const [data, setData] = useState<OnboardingData>({
     name: "",
     bio: "",
@@ -106,26 +107,42 @@ const OnboardingPage = () => {
 
   const createProfileMutation = useCreateProfile()
   const addPlatformMutation = useAddManualPlatform()
+  const { data: existingProfile } = useGetProfile()
+
+  useEffect(() => {
+    if (existingProfile) {
+      navigate("/dashboard")
+    }
+  }, [existingProfile, navigate])
 
   const handleSubmitAll = async () => {
-    const slug = data.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
+    setServerError(null)
+    try {
+      const slug = data.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
 
-    await createProfileMutation.mutateAsync({
-      data: { slug, headline: data.bio, niches: data.niches },
-    })
+      await createProfileMutation.mutateAsync({
+        data: { slug, headline: data.bio, niches: data.niches },
+      })
 
-    for (const p of data.platforms) {
-      if (p.handle) {
-        await addPlatformMutation.mutateAsync({
-          data: { platform: p.platform, handle: p.handle, follower_count: p.followerCount },
-        })
+      for (const p of data.platforms) {
+        if (p.handle) {
+          await addPlatformMutation.mutateAsync({
+            data: { platform: p.platform, handle: p.handle, follower_count: p.followerCount },
+          })
+        }
       }
-    }
 
-    navigate("/dashboard")
+      navigate("/dashboard")
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === "object" && "message" in err
+          ? (err as { message: string }).message
+          : "Something went wrong"
+      setServerError(msg)
+    }
   }
 
   return (
@@ -329,6 +346,12 @@ const OnboardingPage = () => {
                 Your profile is ready. You can always edit these details later
                 from your dashboard.
               </Text>
+
+              {serverError && (
+                <Text size="2" color="red" role="alert">
+                  {serverError}
+                </Text>
+              )}
 
               <Flex gap="3">
                 <Button variant="soft" onClick={() => setStep(2)}>
