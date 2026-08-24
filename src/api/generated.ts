@@ -37,6 +37,16 @@ export interface AuthResponse {
   user: UserResponse;
 }
 
+export interface AuthorizeUrlResponse {
+  authorize_url: string;
+}
+
+export interface ConnectSocialRequest {
+  code: string;
+  platform: string;
+  state: string;
+}
+
 export interface CreateManualPlatformRequest {
   follower_count: number;
   handle: string;
@@ -99,6 +109,20 @@ export interface RegisterRequest {
 export interface ResetPasswordRequest {
   password: string;
   token: string;
+}
+
+export interface SocialConnectionResponse {
+  audience_demographics?: unknown;
+  created_at: string;
+  /** @nullable */
+  engagement_rate?: number | null;
+  follower_count: number;
+  handle: string;
+  id: string;
+  is_primary: boolean;
+  /** @nullable */
+  last_synced_at?: string | null;
+  platform: string;
 }
 
 export interface UpdateManualPlatformRequest {
@@ -1289,6 +1313,391 @@ export function useGetPublicProfile<TData = Awaited<ReturnType<typeof getPublicP
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetPublicProfileQueryOptions(slug,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getConnectUrl = () => {
+
+
+
+
+  return `/social/connect`
+}
+
+export const connect = async (connectSocialRequest: ConnectSocialRequest, options?: RequestInit): Promise<SocialConnectionResponse> => {
+
+  return customFetch<SocialConnectionResponse>(getConnectUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(connectSocialRequest)
+  }
+);}
+
+
+
+
+
+export const getConnectMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof connect>>, TError,{data: ConnectSocialRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof connect>>, TError,{data: ConnectSocialRequest}, TContext> => {
+
+const mutationKey = ['connect'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof connect>>, {data: ConnectSocialRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  connect(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConnectMutationResult = NonNullable<Awaited<ReturnType<typeof connect>>>
+    export type ConnectMutationBody = ConnectSocialRequest
+    export type ConnectMutationError = void
+
+    export const useConnect = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof connect>>, TError,{data: ConnectSocialRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof connect>>,
+        TError,
+        {data: ConnectSocialRequest},
+        TContext
+      > => {
+      return useMutation(getConnectMutationOptions(options), queryClient);
+    }
+
+export const getListConnectionsUrl = () => {
+
+
+
+
+  return `/social/connections`
+}
+
+export const listConnections = async ( options?: RequestInit): Promise<SocialConnectionResponse[]> => {
+
+  return customFetch<SocialConnectionResponse[]>(getListConnectionsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListConnectionsQueryKey = () => {
+    return [
+    `/social/connections`
+    ] as const;
+    }
+
+
+export const getListConnectionsQueryOptions = <TData = Awaited<ReturnType<typeof listConnections>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConnections>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListConnectionsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listConnections>>> = ({ signal }) => listConnections({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listConnections>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListConnectionsQueryResult = NonNullable<Awaited<ReturnType<typeof listConnections>>>
+export type ListConnectionsQueryError = unknown
+
+
+export function useListConnections<TData = Awaited<ReturnType<typeof listConnections>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConnections>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listConnections>>,
+          TError,
+          Awaited<ReturnType<typeof listConnections>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListConnections<TData = Awaited<ReturnType<typeof listConnections>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConnections>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listConnections>>,
+          TError,
+          Awaited<ReturnType<typeof listConnections>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListConnections<TData = Awaited<ReturnType<typeof listConnections>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConnections>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useListConnections<TData = Awaited<ReturnType<typeof listConnections>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConnections>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListConnectionsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getDisconnectUrl = (id: string,) => {
+
+
+
+
+  return `/social/connections/${id}`
+}
+
+export const disconnect = async (id: string, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDisconnectUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDisconnectMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof disconnect>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof disconnect>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['disconnect'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof disconnect>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  disconnect(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DisconnectMutationResult = NonNullable<Awaited<ReturnType<typeof disconnect>>>
+
+    export type DisconnectMutationError = void
+
+    export const useDisconnect = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof disconnect>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof disconnect>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDisconnectMutationOptions(options), queryClient);
+    }
+
+export const getSyncUrl = (id: string,) => {
+
+
+
+
+  return `/social/connections/${id}/sync`
+}
+
+export const sync = async (id: string, options?: RequestInit): Promise<SocialConnectionResponse> => {
+
+  return customFetch<SocialConnectionResponse>(getSyncUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getSyncMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sync>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof sync>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['sync'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sync>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  sync(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SyncMutationResult = NonNullable<Awaited<ReturnType<typeof sync>>>
+
+    export type SyncMutationError = void
+
+    export const useSync = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sync>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof sync>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getSyncMutationOptions(options), queryClient);
+    }
+
+export const getGetAuthorizeUrlUrl = (platform: string,) => {
+
+
+
+
+  return `/social/${platform}/authorize`
+}
+
+export const getAuthorizeUrl = async (platform: string, options?: RequestInit): Promise<AuthorizeUrlResponse> => {
+
+  return customFetch<AuthorizeUrlResponse>(getGetAuthorizeUrlUrl(platform),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAuthorizeUrlQueryKey = (platform: string,) => {
+    return [
+    `/social/${platform}/authorize`
+    ] as const;
+    }
+
+
+export const getGetAuthorizeUrlQueryOptions = <TData = Awaited<ReturnType<typeof getAuthorizeUrl>>, TError = void>(platform: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthorizeUrl>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAuthorizeUrlQueryKey(platform);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAuthorizeUrl>>> = ({ signal }) => getAuthorizeUrl(platform, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: platform !== null && platform !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAuthorizeUrl>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAuthorizeUrlQueryResult = NonNullable<Awaited<ReturnType<typeof getAuthorizeUrl>>>
+export type GetAuthorizeUrlQueryError = void
+
+
+export function useGetAuthorizeUrl<TData = Awaited<ReturnType<typeof getAuthorizeUrl>>, TError = void>(
+ platform: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthorizeUrl>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAuthorizeUrl>>,
+          TError,
+          Awaited<ReturnType<typeof getAuthorizeUrl>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAuthorizeUrl<TData = Awaited<ReturnType<typeof getAuthorizeUrl>>, TError = void>(
+ platform: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthorizeUrl>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAuthorizeUrl>>,
+          TError,
+          Awaited<ReturnType<typeof getAuthorizeUrl>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAuthorizeUrl<TData = Awaited<ReturnType<typeof getAuthorizeUrl>>, TError = void>(
+ platform: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthorizeUrl>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetAuthorizeUrl<TData = Awaited<ReturnType<typeof getAuthorizeUrl>>, TError = void>(
+ platform: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthorizeUrl>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAuthorizeUrlQueryOptions(platform,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
